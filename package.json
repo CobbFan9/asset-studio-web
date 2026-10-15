@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lego-Fan9/asset-studio-web"
+    "url": "https://github.com/CobbFan9/asset-studio-web"
   },
   "exports": {
     ".": "./dist/AssetsManager.js"
