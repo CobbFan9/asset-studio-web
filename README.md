@@ -1,4 +1,4 @@
-# AssetStudioWeb
+# AssetStudioWeb 
 
 AssetStudioWeb is a variant of AssetStudio written in TypeScript.
 
