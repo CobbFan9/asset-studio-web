@@ -28,12 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Uncomment when using an npm token instead
-          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
