@@ -1,4 +1,5 @@
 import { AssetsManager } from "../AssetsManager.js";
+import { logger } from "../../global.js";
 
 const manager = new AssetsManager();
 
@@ -10,7 +11,7 @@ self.onmessage = async (event) => {
 
         switch (method) {
             case "CallObject":
-                console.log(`CallObject called ${event.data}`);
+                logger.debug(`CallObject called ${event.data}`);
                 result = await manager.CallObject(args[0], args[1], args[2]);
                 break;
 

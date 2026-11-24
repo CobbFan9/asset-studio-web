@@ -1,6 +1,7 @@
 import { CompressionType } from "../Enums/CompressionType.js";
 import { decompressBlock as decompressLz4 } from "./Lz4/lz4.js";
 import { decompressSync } from "./Lzma/sync.js"
+import { logger } from "../global.js";
 
 export function Decompress(input: Uint8Array, output: Uint8Array, type: CompressionType, uncompressedSize: number): number {
     let numWrite = -1;
@@ -15,7 +16,7 @@ export function Decompress(input: Uint8Array, output: Uint8Array, type: Compress
 
             let decompressed = decompressSync(lzmaStream);
             if (typeof decompressed === "string") {
-                console.error("LZMA Decompressor returned string.");
+                logger.error("LZMA Decompressor returned string.");
                 break;
             }
 
@@ -23,7 +24,7 @@ export function Decompress(input: Uint8Array, output: Uint8Array, type: Compress
             output.set(decompressed);
             break;
         default:
-            console.error(`CompressionType not supported: ${type}`);
+            logger.error(`CompressionType not supported: ${type}`);
     }
 
     return numWrite;

@@ -12,6 +12,7 @@ import { NamedObject } from "../Classes/NamedObject.js";
 import { Texture2D } from "../Classes/Texture2D.js";
 import path from "../Util/path/index.js";
 import type { RemoteObjectInfo } from "./web/remoteObject.js";
+import { logger } from "../global.js";
 
 export class AssetsManager {
     public loadedAssetsFileNames: string[] = [];
@@ -103,7 +104,7 @@ export class AssetsManager {
 
     private LoadBundleFile(reader: FileReader) {
         const bundleFile = new BundleFile(reader, false);
-        console.log(bundleFile);
+        logger.trace(bundleFile);
 
         let isLoaded = this.LoadBundleFiles(reader, bundleFile)
 
@@ -129,7 +130,7 @@ export class AssetsManager {
                     return false;
                 }
             } else {
-                console.log(`Setting resS with len: ${subReader.view.byteLength}`);
+                logger.debug(`Setting resS with len: ${subReader.view.byteLength}`);
                 this.resourceReaders.set(file.fileName, subReader);
             }
         }
@@ -139,7 +140,7 @@ export class AssetsManager {
 
     private LoadAssetsFromMemory(reader: FileReader, originalPath: string, assetBundleUnityVersion?: UnityVersion): boolean {
         if (reader.FileName in this.loadedAssetsFileNames) {
-            console.info(`Skipping ${reader.FileName} as it is loaded already`);
+            logger.info(`Skipping ${reader.FileName} as it is loaded already`);
 
             return true;
         }
@@ -157,7 +158,7 @@ export class AssetsManager {
                     throw new Error("AssetsFile UnityVersion was stripped and could not be found");
                 }
 
-                console.warn(`AssetsFile UnityVersion was stripped. Assumed version is ${assetBundleUnityVersion.toString()}`);
+                logger.warn(`AssetsFile UnityVersion was stripped. Assumed version is ${assetBundleUnityVersion.toString()}`);
                 assetsFile.version = assetBundleUnityVersion;
             }
 
@@ -165,7 +166,7 @@ export class AssetsManager {
             this.loadedAssetsFileNames.push(reader.FileName);
 
         } catch (err) {
-            console.warn(`Failed to load AssetsFile: ${reader.FileName} It may be a resS ${err}`);
+            logger.warn(`Failed to load AssetsFile: ${reader.FileName} It may be a resS ${err}`);
 
             this.resourceReaders.set(reader.FileName, reader);
 
@@ -179,7 +180,7 @@ export class AssetsManager {
         for (let assetsFile of this.loadedAssetsFiles) {
             for (let objectInfo of assetsFile.m_Objects) {
                 let objectReader = new ObjectReader(assetsFile.reader, assetsFile, objectInfo);
-                //try {
+
                 let obj: UnityObject | null = null;
 
                 if (objectReader.type == ClassIDType.Texture2D) {
@@ -191,10 +192,6 @@ export class AssetsManager {
                 if (obj !== null) {
                     assetsFile.AddObject(obj);
                 }
-
-                //} catch (err) {
-                //    console.error(`Failed to load object ${assetsFile.originalPath} error: ${err}`);
-                //}
             }
         }
     }

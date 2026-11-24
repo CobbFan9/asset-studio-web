@@ -1,14 +1,15 @@
-import { AssetsManagerWeb, Texture2D } from "@cobbfan9/asset-studio-web";
+import { AssetsManagerWeb, Texture2D, logger } from "@cobbfan9/asset-studio-web";
 
 const ASSET_NAME = "shared_resourcecontainer";
 const ASSET_VERSION = "1100059"
 
 let assetsManager: AssetsManagerWeb | null = null
+const log = logger.child("test-site")
 
 async function main() {
     let resp = await fetch(`https://swgoh-assets.lego-fan9.workers.dev/assets?version=${ASSET_VERSION}&item=${ASSET_NAME}`);
     if (!resp.ok) {
-        console.error(`HTTP error! status: ${resp.status}`);
+        log.error(`HTTP error! status: ${resp.status}`);
         return;
     }
 
@@ -17,7 +18,7 @@ async function main() {
     assetsManager = new AssetsManagerWeb();
     await assetsManager.LoadFile(buffer, ASSET_NAME);
 
-    console.log(assetsManager);
+    log.trace(assetsManager);
 
     for (const obj of assetsManager.unityObjs.values()) {
         if (obj.classID === 28) {
