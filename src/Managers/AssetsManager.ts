@@ -1,26 +1,95 @@
-import { EndianBinaryReader } from "./Util/EndianBinaryReader.js";
-import { FileReader } from "./Util/FileReader.js";
-import { FileType } from "./Enums/FileType.js";
-import { ClassIDType } from "./Enums/ClassIDType.js"
-import { BundleFile } from "./Files/Bundle/BundleFile.js";
-import { UnityVersion } from "./Util/UnityVersions.js"
-import { SerializedFile } from "./Files/Serialized/SerializedFile.js"
-import { SerializedFileFormatVersion } from "./Files/Serialized/Models/SerializedFileFormatVersion.js"
-import { ObjectReader } from "./Util/ObjectReader.js";
-import { UnityObject } from "./Classes/Object.js";
-import { Texture2D } from "./Classes/Texture2D.js";
-import path from "./Util/path/index.js";
+import { EndianBinaryReader } from "../Util/EndianBinaryReader.js";
+import { FileReader } from "../Util/FileReader.js";
+import { FileType } from "../Enums/FileType.js";
+import { ClassIDType } from "../Enums/ClassIDType.js"
+import { BundleFile } from "../Files/Bundle/BundleFile.js";
+import { UnityVersion } from "../Util/UnityVersions.js"
+import { SerializedFile } from "../Files/Serialized/SerializedFile.js"
+import { SerializedFileFormatVersion } from "../Files/Serialized/Models/SerializedFileFormatVersion.js"
+import { ObjectReader } from "../Util/ObjectReader.js";
+import { UnityObject } from "../Classes/Object.js";
+import { NamedObject } from "../Classes/NamedObject.js";
+import { Texture2D } from "../Classes/Texture2D.js";
+import path from "../Util/path/index.js";
+import type { RemoteObjectInfo } from "./web/remoteObject.js";
 
 export class AssetsManager {
     public loadedAssetsFileNames: string[] = [];
     public loadedAssetsFiles: SerializedFile[] = [];
     public resourceReaders = new Map<string, FileReader>()
+    public unityObjs: Map<BigInt, UnityObject> = new Map<BigInt, UnityObject>();
 
     public LoadFile(data: ArrayBuffer, name: string) {
         const endianReader = new EndianBinaryReader(data)
         const fileReader = new FileReader(name, endianReader);
 
         this.LoadFileByType(fileReader);
+    }
+
+    public GetState(remote: true): {
+        loadedAssetsFileNames: string[];
+        loadedAssetsFiles: SerializedFile[];
+        unityObjs: RemoteObjectInfo[];
+    };
+
+    public GetState(remote?: false): {
+        loadedAssetsFileNames: string[];
+        loadedAssetsFiles: SerializedFile[];
+        unityObjs: Map<bigint, UnityObject>;
+    };
+
+    public GetState(remote = false) {
+        return {
+            loadedAssetsFileNames: this.loadedAssetsFileNames,
+            loadedAssetsFiles: this.loadedAssetsFiles,
+
+            unityObjs: remote
+                ? Array.from(this.unityObjs.entries()).map(([id, obj]) => ({
+                    id,
+                    type: obj.constructor.name,
+                    ...(obj instanceof NamedObject ? { name: obj.m_Name } : {}),
+                    classID: obj.classID,
+                    methods: this.GetMethods(obj)
+                }))
+                : this.unityObjs
+        };
+    }
+
+    private GetMethods(obj: UnityObject): string[] {
+        const methods = new Set<string>();
+
+        let prototype = Object.getPrototypeOf(obj);
+
+        while (prototype && prototype !== Object.prototype) {
+            for (const name of Object.getOwnPropertyNames(prototype)) {
+                if (
+                    name !== "constructor" &&
+                    typeof (obj as any)[name] === "function"
+                ) {
+                    methods.add(name);
+                }
+            }
+
+            prototype = Object.getPrototypeOf(prototype);
+        }
+
+        return [...methods];
+    }
+
+    public async CallObject(id: BigInt, method: string, args: any[]) {
+        const obj = this.unityObjs.get(id);
+
+        if (!obj) {
+            throw new Error(`Object ${id} not found`);
+        }
+
+        const fn = (obj as any)[method];
+
+        if (typeof fn !== "function" || method === "constructor") {
+            throw new Error(`Method ${method} not found`);
+        }
+
+        return await fn.apply(obj, args);
     }
 
     private LoadFileByType(reader: FileReader) {
@@ -111,17 +180,17 @@ export class AssetsManager {
             for (let objectInfo of assetsFile.m_Objects) {
                 let objectReader = new ObjectReader(assetsFile.reader, assetsFile, objectInfo);
                 //try {
-                    let obj: UnityObject | null = null;
+                let obj: UnityObject | null = null;
 
-                    if (objectReader.type == ClassIDType.Texture2D) {
-                        obj = new Texture2D(objectReader);
-                    } else {
-                        obj = new UnityObject(objectReader);
-                    }
+                if (objectReader.type == ClassIDType.Texture2D) {
+                    obj = new Texture2D(objectReader);
+                } else {
+                    obj = new UnityObject(objectReader);
+                }
 
-                    if (obj !== null) {
-                        assetsFile.AddObject(obj);
-                    }
+                if (obj !== null) {
+                    assetsFile.AddObject(obj);
+                }
 
                 //} catch (err) {
                 //    console.error(`Failed to load object ${assetsFile.originalPath} error: ${err}`);
@@ -130,6 +199,3 @@ export class AssetsManager {
         }
     }
 }
-
-export { ExportTexture2D } from "./Exporters/Texture2D.js";
-export { Texture2D } from "./Classes/Texture2D.js";

@@ -13,6 +13,9 @@
     "vite": "^8.0.12"
   },
   "dependencies": {
-    "@lego-fan9/asset-studio-web": "file:../.."
+    "@cobbfan9/asset-studio-web": "workspace:*"
+  },
+  "engines": {
+    "node": "v26.x"
   }
 }

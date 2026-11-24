@@ -1,0 +1,19 @@
+{
+  "name": "node-test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "@cobbfan9/asset-studio-web": "workspace:*",
+    "tsx": "^4.23.15"
+  },
+  "engines": {
+    "node": "v26.x"
+  }
+}

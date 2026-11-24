@@ -1,25 +1,32 @@
-import { RequestEnvelope } from "./RequestEnvelope.ts";
-import type { RequestEnvelopePayload } from "./RequestEnvelope.ts";
+import { AssetsManagerWeb, Texture2D } from "@cobbfan9/asset-studio-web";
 
 const ASSET_NAME = "shared_resourcecontainer";
+const ASSET_VERSION = "1100059"
 
-function main() {
-    const loader = new Worker(new URL("./loader.ts", import.meta.url), { type: "module" });
-    loader.postMessage(new RequestEnvelope("init", ASSET_NAME));
+let assetsManager: AssetsManagerWeb | null = null
 
-    loader.onmessage = (e: MessageEvent<RequestEnvelopePayload>) => {
-        const { type, payload } = e.data
-        switch (type) {
-            case "init":
-                loader.postMessage(new RequestEnvelope("images", null));
-                break;
-            case "images":
-                var temp: string[] = []
-                temp.push(payload as string)
-                populateImages(temp);
-                break;
-            default:
-                console.log(`Unknown type: ${type}`);
+async function main() {
+    let resp = await fetch(`https://swgoh-assets.lego-fan9.workers.dev/assets?version=${ASSET_VERSION}&item=${ASSET_NAME}`);
+    if (!resp.ok) {
+        console.error(`HTTP error! status: ${resp.status}`);
+        return;
+    }
+
+    const buffer = await resp.arrayBuffer();
+
+    assetsManager = new AssetsManagerWeb();
+    await assetsManager.LoadFile(buffer, ASSET_NAME);
+
+    console.log(assetsManager);
+
+    for (const obj of assetsManager.unityObjs.values()) {
+        if (obj.classID === 28) {
+            const texture = obj as Texture2D;
+
+            const img = await texture.Export()
+            if (img === null) continue;
+
+            populateImages([img]);
         }
     }
 }
