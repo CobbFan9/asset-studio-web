@@ -44,9 +44,6 @@ export class ResourceReader {
     public GetData(): Uint8Array | null {
         this.GetReader();
 
-        //console.log(`Reading data from resS`);
-        //console.log(this);
-
         if (this.resReader === null) {
             return null;
         }

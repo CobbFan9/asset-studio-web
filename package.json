@@ -8,9 +8,9 @@
     "url": "https://github.com/CobbFan9/asset-studio-web"
   },
   "exports": {
-    ".": "./dist/AssetsManager.js"
+    ".": "./dist/index.js"
   },
-  "types": "./dist/AssetsManager.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "LICENSE",
@@ -18,7 +18,9 @@
   ],
   "scripts": {
     "build": "tsup",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "dev:test-site": "pnpm --filter test-site dev",
+    "dev:node-test": "pnpm --filter node-test dev"
   },
   "publishConfig": {
     "access": "public",
@@ -30,6 +32,7 @@
     "@semantic-release/github": "^12.0.11",
     "@semantic-release/npm": "^13.2.0",
     "@semantic-release/release-notes-generator": "^14.1.1",
+    "@types/node": "^26.6.6",
     "semantic-release": "^25.0.9",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3"

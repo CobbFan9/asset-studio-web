@@ -4,6 +4,8 @@ import { ResourceReader } from "../Util/ResourceReader.js";
 import { TextureFormat } from "../Enums/TextureFormat.js";
 import { GLTextureSettings } from "./GLTextureSettings.js";
 import { StreamingInfo } from "./StreamingInfo.js";
+import type { ExportTexture2DProps } from "../Exporters/Texture2D.js";
+import { ExportTexture2D } from "../Exporters/Texture2D.js";
 
 export class Texture2D extends Texture {
     public m_Width: number;
@@ -105,5 +107,30 @@ export class Texture2D extends Texture {
         } else {
             this.image_data = new ResourceReader(reader, imageDataSize, reader.offset, "", true);
         }
+    }
+
+    public async Export(): Promise<string | null> {
+        return ExportTexture2D(this.toExportProps());
+    }
+
+    public async GetName(): Promise<string> {
+        return this.m_Name;
+    }
+
+    private toExportProps(): ExportTexture2DProps {
+        return {
+            m_Name: this.m_Name,
+            m_Width: this.m_Width,
+            m_Height: this.m_Height,
+            m_CompleteImageSize: this.m_CompleteImageSize,
+            m_TextureFormat: this.m_TextureFormat,
+            m_MipMap: this.m_MipMap,
+            m_MipCount: this.m_MipCount,
+            m_TextureSettings: this.m_TextureSettings,
+            m_ImageCount: this.m_ImageCount,
+            m_PlatformBlob: this.m_PlatformBlob,
+            image_data: this.image_data,
+            m_StreamData: this.m_StreamData
+        };
     }
 }

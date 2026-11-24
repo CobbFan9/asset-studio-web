@@ -10,7 +10,8 @@ import { FileIdentifier } from "./Models/FileIdentifier.js";
 import { EndianType } from "../../Enums/Endian.js";
 import { BuildTarget } from "../../Enums/BuildTarget.js";
 import { UnityObject } from "../../Classes/Object.js";
-import { AssetsManager } from "../../AssetsManager.js";
+import { AssetsManager } from "../../Managers/AssetsManager.js";
+import { logger } from "../../global.js";
 
 export class SerializedFile {
     public reader: FileReader;
@@ -171,7 +172,7 @@ export class SerializedFile {
 
                 const serializedType = this.m_Types.find(x => x.classID === objectInfo.typeID);
                 if (serializedType === undefined) {
-                    console.error(`Failed to load object serializedType! ClassID: ${objectInfo.classID} TypeID: ${objectInfo.typeID}`);
+                    logger.error(`Failed to load object serializedType! ClassID: ${objectInfo.classID} TypeID: ${objectInfo.typeID}`);
                     continue;
                 }
 
@@ -248,5 +249,6 @@ export class SerializedFile {
     public AddObject(obj: UnityObject) {
         this.ObjectList.push(obj);
         this.ObjectMap.set(obj.m_PathID, obj);
+        this.assetsManager.unityObjs.set(obj.m_PathID, obj);
     }
 }

@@ -1,21 +1,40 @@
-import { Texture2D } from "../Classes/Texture2D.js";
 import { TextureFormat } from "../Enums/TextureFormat.js";
+import { ResourceReader } from "../Util/ResourceReader.js";
+import { GLTextureSettings } from "../Classes/GLTextureSettings.js";
+import { StreamingInfo } from "../Classes/StreamingInfo.js";
 
 import { decodeImage } from "./ImageDecoders/decode.js";
 
+import { logger } from "../global.js";
+
 import { encodePng } from '@lunapaint/png-codec';
 
-export async function ExportTexture2D(m_Texture2D: Texture2D): Promise<string | null> {
-    console.log(`Starting export of ${m_Texture2D.m_Name}`);
+export interface ExportTexture2DProps {
+    m_Name: string;
+    m_Width: number;
+    m_Height: number;
+    m_CompleteImageSize: number;
+    m_TextureFormat: TextureFormat;
+    m_MipMap: boolean;
+    m_MipCount: number;
+    m_TextureSettings: GLTextureSettings;
+    m_ImageCount: number;
+    m_PlatformBlob: Uint8Array;
+    image_data: ResourceReader;
+    m_StreamData: StreamingInfo;
+}
+
+export async function ExportTexture2D(m_Texture2D: ExportTexture2DProps): Promise<string | null> {
+    logger.debug(`Starting export of ${m_Texture2D.m_Name}`);
 
     if (m_Texture2D.image_data.size === 0 || m_Texture2D.m_Width <= 0 || m_Texture2D.m_Height <= 0) {
-        console.error("Tried to decode an image with no image_data, or with no size...");
+        logger.error("Tried to decode an image with no image_data, or with no size...");
         return null;
     }
 
     const imageBlob = m_Texture2D.image_data.GetData();
     if (imageBlob === null) {
-        console.error("Could not read texture data from resS...");
+        logger.error("Could not read texture data from resS...");
         return null;
     }
 
@@ -75,7 +94,7 @@ function ExportDXT1(input: Uint8Array, outputRef: Uint8Array, width: number, hei
         const decoded = decodeBC1(view, width, height);
         outputRef.set(decoded);
     } catch (err) {
-        console.error(`Failed to decode img: ${err}`);
+        logger.error(`Failed to decode img: ${err}`);
 
         return false;
     }
@@ -89,7 +108,7 @@ function ExportDXT5(input: Uint8Array, outputRef: Uint8Array, width: number, hei
         const decoded = decodeBC3(view, width, height, false);
         outputRef.set(decoded);
     } catch (err) {
-        console.error(`Failed to decode img: ${err}`);
+        logger.error(`Failed to decode img: ${err}`);
 
         return false;
     }
@@ -102,7 +121,7 @@ function ExportBC7(input: Uint8Array, outputRef: Uint8Array, width: number, heig
         const decoded = decodeImage(input, 'BC7', { offset: 0, length: input.length, shape: { width: width, height: height } });
         outputRef.set(decoded);
     } catch (err) {
-        console.error(`Failed to decode img: ${err}`);
+        logger.error(`Failed to decode img: ${err}`);
 
         return false;
     }

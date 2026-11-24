@@ -9,6 +9,7 @@ import { CompressionType } from "../../Enums/CompressionType.js";
 import { StorageBlockFlags } from "../../Enums/StorageBlockFlags.js";
 import { Decompress } from "../../Decompression/Decompression.js"
 import path from "../../Util/path/index.js";
+import { logger } from "../../global.js";
 
 export class BundleFile {
     public readonly IsDataAfterBundle: boolean;
@@ -25,7 +26,7 @@ export class BundleFile {
             case "UnityFS":
                 this.m_Header.ReadHeader2(reader);
 
-                console.log(this.m_Header);
+                logger.trace(this.m_Header);
 
                 if (this.m_Header.size > reader.view.byteLength) {
                     throw new Error(`Bundle size is wrong. Header claims ${this.m_Header.size}, reader is ${reader.view.byteLength}`);
@@ -111,7 +112,7 @@ export class BundleFile {
             this.m_BlocksInfo[i] = new BundleStorageBlock(blocksInfoReader);
         }
 
-        console.log(this.m_BlocksInfo);
+        logger.trace(this.m_BlocksInfo);
 
         const nodesCount = blocksInfoReader.ReadInt32();
         this.m_DirectoryInfo = new Array(nodesCount);
@@ -120,7 +121,7 @@ export class BundleFile {
             this.m_DirectoryInfo[i] = new BundleNode(blocksInfoReader);
         }
 
-        console.log(this.m_DirectoryInfo);
+        logger.trace(this.m_DirectoryInfo);
 
         if ((this.m_Header.flags & ArchiveFlags.BlockInfoNeedPaddingAtStart) != 0) {
             reader.AlignStream(16);
@@ -163,14 +164,14 @@ export class BundleFile {
                     numWrite = Decompress(compressedBuff, uncompressedBuff, compressionType, blockInfo.uncompressedSize);
 
                     if (numWrite !== blockInfo.uncompressedSize) {
-                        console.error(`Decompression error. Expected ${blockInfo.uncompressedSize} got ${numWrite}`);
+                        logger.error(`Decompression error. Expected ${blockInfo.uncompressedSize} got ${numWrite}`);
                     }
 
                     chunks.push(uncompressedBuff);
                     
                     break;
                 default:
-                    console.warn(`Cannot decompress block type: ${compressionType}`);
+                    logger.warn(`Cannot decompress block type: ${compressionType}`);
             }
         }
 
@@ -194,7 +195,7 @@ export class BundleFile {
             const stream = new EndianBinaryReader(fileBuffer);
 
             if (stream.isAllZero()) {
-                console.warn(`${fileName} ${node.path} is all zero`);
+                logger.warn(`${fileName} ${node.path} is all zero`);
             }
 
             let file = new StreamFile(node.path, fileName, stream);
