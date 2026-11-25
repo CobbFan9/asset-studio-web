@@ -1,6 +1,6 @@
 import { AssetsManagerWeb, Texture2D, logger } from "@cobbfan9/asset-studio-web";
 
-const ASSET_NAME = "shared_resourcecontainer";
+const ASSET_NAME = "shared_uicontainer";
 const ASSET_VERSION = "1100059"
 
 let assetsManager: AssetsManagerWeb | null = null

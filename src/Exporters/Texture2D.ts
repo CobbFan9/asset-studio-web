@@ -7,7 +7,8 @@ import { decodeImage } from "./ImageDecoders/decode.js";
 
 import { logger } from "../global.js";
 
-import { encodePng } from '@lunapaint/png-codec';
+import { encode } from "png-tools";
+import { deflate } from "pako";
 
 export interface ExportTexture2DProps {
     m_Name: string;
@@ -76,11 +77,15 @@ export async function ExportTexture2D(m_Texture2D: ExportTexture2DProps): Promis
         }
     }
 
-    const pngData = await encodePng({ data: flipped, width: m_Texture2D.m_Width, height: m_Texture2D.m_Height });
+    const pngData = encode({
+        data: flipped,
+        width: m_Texture2D.m_Width,
+        height: m_Texture2D.m_Height,
+    }, deflate);
 
     let binary = "";
-    for (let i = 0; i < pngData.data.length; i++) {
-        binary += String.fromCharCode(pngData.data[i]);
+    for (let i = 0; i < pngData.length; i++) {
+        binary += String.fromCharCode(pngData[i]);
     }
 
     const base64 = btoa(binary);
