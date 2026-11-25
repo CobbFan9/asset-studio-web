@@ -5,6 +5,7 @@
     "lib": ["ES2023", "DOM"],
     "types": ["node"],
     "skipLibCheck": true,
+    "customConditions": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",

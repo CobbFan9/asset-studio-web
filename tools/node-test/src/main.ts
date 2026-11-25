@@ -2,13 +2,18 @@ import { AssetsManagerNode, Texture2D, logger } from "@cobbfan9/asset-studio-web
 import fs from 'node:fs';
 import path from 'node:path';
 
-const ASSET_NAME = "shared_resourcecontainer";
+const ASSET_NAME = "shared_uicontainer";
 const ASSET_VERSION = "1100059"
 
 let assetsManager: AssetsManagerNode | null = null
 const log = logger.child("node-test");
 
 async function main() {
+    fs.rmSync("test_out", {
+        recursive: true,
+        force: true
+    });
+
     let resp = await fetch(`https://swgoh-assets.lego-fan9.workers.dev/assets?version=${ASSET_VERSION}&item=${ASSET_NAME}`);
     if (!resp.ok) {
         log.error(`HTTP error! status: ${resp.status}`);

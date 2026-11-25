@@ -30,6 +30,7 @@
     "README.md"
   ],
   "scripts": {
+    "check": "tsc --noEmit",
     "build": "tsup",
     "release": "semantic-release",
     "dev:test-site": "pnpm --filter test-site dev",
@@ -51,7 +52,8 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@lunapaint/png-codec": "^0.2.0"
+    "pako": "^3.0.3",
+    "png-tools": "^1.1.1"
   },
   "allowScripts": {
     "esbuild@0.27.7": true
